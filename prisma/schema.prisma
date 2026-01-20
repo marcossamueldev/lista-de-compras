@@ -1,0 +1,13 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Task {
+  id    String  @id @default(uuid()) // Mudamos de cuid() para uuid()
+  task  String
+  done  Boolean @default(false)
+}

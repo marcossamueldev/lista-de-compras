@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, } from "@/components/ui/alert-dialog"
-import { Plus, List, Check, ListX, SquarePen, Trash2, ListCheck, Sigma, } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, List, Check, ListX, Trash2, ListCheck, Sigma, } from 'lucide-react';
+import EditTask from "@/components/edit-task"
 
 
 const Home = () => {
@@ -37,22 +37,7 @@ const Home = () => {
               <p className="flex-1 px-2 text-sm">Esudar React</p>
               <div className="flex items-center gap-2">
 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <SquarePen size={16} className="cursor-pointer" />
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Editar tarefa</DialogTitle>
-                    </DialogHeader>
-
-                    <div className="flex gap-2">
-                      <Input placeholder="Editar Tarefa" />
-                      <Button className="cursor-pointer">Editar</Button>
-                    </div>
-
-                  </DialogContent>
-                </Dialog>
+                <EditTask />
 
                 <Trash2 size={16} className="cursor-pointer" />
               </div>
