@@ -4,10 +4,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Task {
-  id    String  @id @default(uuid()) // Mudamos de cuid() para uuid()
-  task  String
-  done  Boolean @default(false)
+  id String   @id @default(cuid())
+  task String
+  done Boolean
 }
