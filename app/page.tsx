@@ -12,6 +12,8 @@ import { useEffect, useState } from "react"
 import { Task } from "@prisma/client";
 import { NewTask } from "@/actions/add-task";
 import { deleteTask } from "@/actions/delete-task";
+import { toast } from "sonner"
+import { updateTaskStatus } from "@/actions/toggle-done"
 
 
 const Home = () => {
@@ -29,16 +31,20 @@ const Home = () => {
     }
   }
 
-   const handleAddTask = async () => {
+  const handleAddTask = async () => {
     try {
-      if(task.length === 0 || !task) {
-      return
-    }
+      if (task.length === 0 || !task) {
+        return
+      }
 
-    const myNewtask = await NewTask(task)
+      const myNewtask = await NewTask(task)
 
-    if(!myNewtask) return
-    await handleGetTasks()
+      if (!myNewtask) return
+
+      setTask('')
+
+      await handleGetTasks()
+      toast.success("Tarefa adicionada com sucesso!")
     } catch (error) {
       throw error
     }
@@ -53,11 +59,34 @@ const Home = () => {
       if (!deletedTask) return
 
       await handleGetTasks()
+      toast.warning("Tarefa deletada com sucesso!")
     } catch (error) {
       throw error
     }
 
   }
+
+  const handleToggleTask = async (taskId: string) => {
+    const previousTasks = [...taskList];
+
+    try {
+      setTaskList((prev) => {
+        const updatedTasks = prev.map((task) => {
+          if (task.id === taskId) {
+            return { ...task, done: !task.done };
+          } else {
+            return task;
+          }
+        });
+        return updatedTasks;
+      });
+      await updateTaskStatus(taskId)
+    } catch (error) {
+      setTaskList(previousTasks)
+      throw error
+    }
+
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -72,7 +101,7 @@ const Home = () => {
       <Card className="w-lg p-4">
         <CardHeader>
           <div className="flex gap-2">
-            <Input placeholder="Adicionar tarefa" onChange={(e) => setTask(e.target.value)} />
+            <Input placeholder="Adicionar tarefa" onChange={(e) => setTask(e.target.value)} value={task} />
             <Button variant="default" className="cursor-pointer" onClick={handleAddTask} ><Plus />Cadastrar</Button>
           </div>
         </CardHeader>
@@ -91,8 +120,11 @@ const Home = () => {
 
             {taskList.map(task => (
               <div className=" h-14 flex justify-between items-center border-b border-t" key={task.id}>
-                <div className="w-1 h-full bg-green-300"></div>
-                <p className="flex-1 px-2 text-sm">{task.task}</p>
+                <div className={`${task.done ? 'w-1 h-full bg-green-400' : 'w-1 h-full bg-red-400'}`}></div>
+                <p className="flex-1 px-2 text-sm cursor-pointer hover:text-gray-800"
+
+                  onClick={() => handleToggleTask(task.id)}
+                >{task.task}</p>
                 <div className="flex items-center gap-2">
 
                   <EditTask />
