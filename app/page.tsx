@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, } from "@/components/ui/alert-dialog"
-import { Plus, List, Check, ListX, Trash2, ListCheck, Sigma, } from 'lucide-react';
+import { Plus, Trash2, ListCheck, Sigma, LoaderCircle } from 'lucide-react';
 import EditTask from "@/components/edit-task"
 import { getTasks } from "@/actions/get-tasks-from-bd";
 import { useEffect, useState } from "react"
@@ -14,11 +13,17 @@ import { NewTask } from "@/actions/add-task";
 import { deleteTask } from "@/actions/delete-task";
 import { toast } from "sonner"
 import { updateTaskStatus } from "@/actions/toggle-done"
+import Filter from "@/components/filter"
+import { FilterType } from "@/components/filter"
+import { deleteCompletedTasks } from "@/actions/clear-completed-tasks"
 
 
 const Home = () => {
   const [taskList, setTaskList] = useState<Task[]>([])
   const [task, setTask] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [currentFilter, setCurrentFliter] = useState<FilterType>('all')
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
 
 
   const handleGetTasks = async () => {
@@ -32,9 +37,11 @@ const Home = () => {
   }
 
   const handleAddTask = async () => {
+    setLoading(true)
     try {
       if (task.length === 0 || !task) {
         toast.error('insira uma atividade')
+        setLoading(false)
         return
       }
 
@@ -49,6 +56,7 @@ const Home = () => {
     } catch (error) {
       throw error
     }
+    setLoading(false)
   }
 
   const handleDeleteTask = async (id: string) => {
@@ -89,12 +97,35 @@ const Home = () => {
 
   };
 
+  const clearCompletedTasks = async () => {
+    const deletedTask = await deleteCompletedTasks()
+
+    if(!deletedTask) return
+
+    setTaskList(deletedTask)
+  }
+
   useEffect(() => {
     const fetchTasks = async () => {
       await handleGetTasks()
     }
     fetchTasks()
   }, [])
+
+  useEffect(() => {
+    switch (currentFilter) {
+      case 'all':
+        setFilteredTasks(taskList)
+        break
+      case 'pending':
+        const pedingTasks = taskList.filter(task => !task.done)
+        setFilteredTasks(pedingTasks)
+        break
+      case 'completed':
+        const completedTask = taskList.filter(task => task.done)
+        setFilteredTasks(completedTask)
+    }
+  }, [currentFilter, taskList])
 
   return (
     <main className="w-full h-screen bg-gray-100 flex justify-center items-center">
@@ -103,23 +134,22 @@ const Home = () => {
         <CardHeader>
           <div className="flex gap-2">
             <Input placeholder="Adicionar tarefa" onChange={(e) => setTask(e.target.value)} value={task} />
-            <Button variant="default" className="cursor-pointer" onClick={handleAddTask} ><Plus />Cadastrar</Button>
+            <Button variant="default" className="cursor-pointer" onClick={handleAddTask} >
+              {loading ? <LoaderCircle className="animate-spin" /> : <Plus />}
+              Cadastrar</Button>
           </div>
         </CardHeader>
 
         <CardContent>
           <Separator className="mb-6" />
 
-          <div className="flex gap-2">
-            <Badge className="cursor-pointer" variant="default"><List /> Todas</Badge>
-            <Badge className="cursor-pointer" variant="outline"><ListX /> Nao Finalizadas</Badge>
-            <Badge className="cursor-pointer" variant="outline"><Check /> Concluidas</Badge>
-          </div>
+          <Filter currentFilter={currentFilter} setCurrentFliter={setCurrentFliter} />
 
 
           <div className=" mt-4 border-b">
+            {taskList.length === 0 && <p className="text-xs border-1 py-4">Voce nao possui atividade cadastradas.</p>}
 
-            {taskList.map(task => (
+            {filteredTasks.map(task => (
               <div className=" h-14 flex justify-between items-center border-b border-t" key={task.id}>
                 <div className={`${task.done ? 'w-1 h-full bg-green-400' : 'w-1 h-full bg-red-400'}`}></div>
                 <p className="flex-1 px-2 text-sm cursor-pointer hover:text-gray-800"
@@ -140,7 +170,7 @@ const Home = () => {
           <div className="flex justify-between mt-4">
             <div className="flex gap-2 items-center ">
               <ListCheck size={18} />
-              <p className="text-xs">Tarefas concluidas (3/3)</p>
+              <p className="text-xs">Tarefas concluidas ({taskList.filter(task => task.done).length}/{taskList.length})</p>
             </div>
 
             <AlertDialog>
@@ -152,8 +182,8 @@ const Home = () => {
                   <AlertDialogTitle>Tem certeza que deseja excluir x itens?</AlertDialogTitle>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Sim</AlertDialogCancel>
-                  <AlertDialogAction>Cancela</AlertDialogAction>
+                  <AlertDialogCancel className="cursor-pointer" onClick={clearCompletedTasks}>Sim</AlertDialogCancel>
+                  <AlertDialogAction className="cursor-pointer" >Cancela</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -161,12 +191,13 @@ const Home = () => {
           </div>
 
           <div className="h-2 w-full bg-gray-200 mt-4 rounded-md">
-            <div className="h-full bg-blue-500 rounded-md" style={{ width: "50%" }}></div>
+            <div className="h-full bg-blue-500 rounded-md" style={{ width: `
+              ${((taskList.filter(task => task.done).length) / taskList.length) * 100}%` }}></div>
           </div>
 
           <div className="flex justify-end items-center mt-4 gap-2">
             <Sigma size={18} />
-            <p className="text-xs">3 tarefas no total</p>
+            <p className="text-xs">{taskList.length} tarefas no total</p>
           </div>
 
         </CardContent>
