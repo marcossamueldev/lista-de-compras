@@ -39,7 +39,7 @@ const Home = () => {
       const tasks = await getTasks()
       if (tasks) setTaskList(tasks)
     } catch (error) {
-      console.error(error) // SOLUÇÃO 1: Logamos o erro para o ESLint parar de reclamar
+      console.error(error)
       toast.error("Erro ao carregar tarefas")
     }
   }
@@ -72,7 +72,7 @@ const Home = () => {
       await handleGetTasks()
       toast.warning("Tarefa deletada!")
     } catch (error) {
-      console.error(error) // SOLUÇÃO 1
+      console.error(error) 
       toast.error("Erro ao deletar")
     }
   }
@@ -98,7 +98,7 @@ const Home = () => {
         toast.success("Tarefas concluídas limpas!")
       }
     } catch (error) {
-       console.error(error) // SOLUÇÃO 1
+       console.error(error) 
        await handleGetTasks()
     }
   }
@@ -130,7 +130,6 @@ const Home = () => {
           <Filter currentFilter={currentFilter} setCurrentFliter={setCurrentFliter} />
 
           <div className="mt-4 border-b">
-            {/* SOLUÇÃO 2: Trocamos 'border-1' por 'border' aqui embaixo */}
             {taskList.length === 0 && <p className="text-xs border py-4 text-center text-gray-500">Você não possui atividades cadastradas.</p>}
 
             {filteredTasks.map(task => (
