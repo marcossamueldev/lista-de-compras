@@ -3,7 +3,8 @@ import { prisma } from "@/utils/prisma";
 
 export const updateTaskStatus = async (taskId: string) => {
 
-    const currentTask = await prisma.task.findUnique({
+    try {
+        const currentTask = await prisma.task.findUnique({
         where: {id: taskId}
     })
 
@@ -17,5 +18,9 @@ export const updateTaskStatus = async (taskId: string) => {
     if (!updatedStatus) return
 
     return updatedStatus
+    } catch (error) {
+        throw error
+    }
+
 
 }
