@@ -34,6 +34,7 @@ const Home = () => {
   const handleAddTask = async () => {
     try {
       if (task.length === 0 || !task) {
+        toast.error('insira uma atividade')
         return
       }
 
